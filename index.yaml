@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  secrets-operator:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2021-07-23T23:53:39.943864508Z"
+    description: An operator to deploy secrets into a kubernetes cluster
+    digest: eeba5ea886711a9a5ba3ebd8fade225b0ea7b8648a61305aba056c8f7210e01d
+    name: secrets-operator
+    type: application
+    urls:
+    - https://github.com/s1devops/secrets-operator/releases/download/secrets-operator-0.4.0/secrets-operator-0.4.0.tgz
+    version: 0.4.0
+generated: "2021-07-23T23:53:39.94390231Z"
