@@ -5,7 +5,6 @@ on:
       - 'v*'
 
 env:
-  CHART_REGISTRY: "ghcr.io/s1devops/secrets-operator-chart"
   OPERATOR_IMAGE: "ghcr.io/s1devops/secrets-operator"
 
 jobs:
@@ -34,25 +33,3 @@ jobs:
           tags: |
             ${{env.OPERATOR_IMAGE}}:latest
             ${{env.OPERATOR_IMAGE}}:${{steps.get_version.outputs.VERSION}}
-  build-chart:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: Azure/setup-helm@v1
-        with:
-          version: '3.6.3'
-      - name: Get chart version
-        id: chart_version
-        run: |
-          VERSION=$(helm show chart charts/secrets-operator/ | grep '^version' | sed 's/version: //')
-          echo ::set-output name=VERSION::${VERSION}
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.2.1
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
