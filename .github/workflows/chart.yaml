@@ -17,11 +17,6 @@ jobs:
       - uses: Azure/setup-helm@v1
         with:
           version: '3.6.3'
-      - name: Get chart version
-        id: chart_version
-        run: |
-          VERSION=$(helm show chart charts/secrets-operator/ | grep '^version' | sed 's/version: //')
-          echo ::set-output name=VERSION::${VERSION}
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
