@@ -1,0 +1,16 @@
+apiVersion: skaffold/v1beta13
+kind: Config
+build:
+  artifacts:
+  - image: secrets-operator
+deploy:
+  helm:
+    releases:
+    - name: secrets-operator
+      chartPath: charts/secrets-operator
+      values:
+        image: secrets-operator
+      imageStrategy:
+        helm: {}
+
+

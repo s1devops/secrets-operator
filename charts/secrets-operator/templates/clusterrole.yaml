@@ -1,0 +1,36 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "secrets-operator.serviceAccountName" . }}
+  labels:
+    {{- include "secrets-operator.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - secrets.s1devops.com
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - "source.toolkit.fluxcd.io"
+  resources:
+  - gitrepositories
+  verbs:
+  - get
+  - list
+  - watch
+
+{{- end }}
