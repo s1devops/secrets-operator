@@ -33,7 +33,8 @@ func (h *Handler) Get(key string) ([]byte, error) {
 		return nil, err
 	}
 
-	return output, nil
+	// Do not treat leading and trailing whitespace as significant
+	return bytes.TrimSpace(output), nil
 }
 
 func (h *Handler) Template(tmpl string) ([]byte, error) {
