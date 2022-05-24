@@ -263,6 +263,10 @@ func downloadArtifact(href string, cacheDir string) error {
 			return err
 		}
 
+		if(header.Typeflag != tar.TypeReg) {
+			// Ignore any non regular files
+			continue;
+		}
 		destinationPath := filepath.Join(cacheDir, header.Name)
 
 		destinationDir := filepath.Dir(destinationPath)
