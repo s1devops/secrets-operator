@@ -136,7 +136,12 @@ func (r *SecretMappingReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, err
 	}
 
-	revision := determineRevision(gitRepo)
+	revision, err := determineRevision(gitRepo)
+	if err != nil {
+		logger.Error(err, "Failed to determine git revision", "SecretMapping.Namespace", secretMapping.Namespace, "SecretMapping.Name", secretMapping.Name)
+		return ctrl.Result{}, err
+
+	}
 	revisionCacheDir := filepath.Join(r.GitCacheDir, revision)
 	if _, err := os.Stat(revisionCacheDir); os.IsNotExist(err) {
 		logger.Info("Downloading git revision", "SecretMapping.Namespace", secretMapping.Namespace, "SecretMapping.Name", secretMapping.Name, "Revision", revision)
@@ -219,14 +224,14 @@ func (r *SecretMappingReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	return ctrl.Result{}, nil
 }
 
-func determineRevision(gitRepo *sourcev1.GitRepository) string {
+func determineRevision(gitRepo *sourcev1.GitRepository) (string, error) {
 	rawRevision := gitRepo.Status.Artifact.Revision
-	portions := strings.Split(rawRevision, "/")
+	portions := strings.Split(rawRevision, ":")
 	if len(portions) != 2 {
-		return ""
+		return "", fmt.Errorf("could not parse revision from %s", rawRevision)
 	}
 
-	return portions[1]
+	return portions[1], nil
 }
 
 func downloadArtifact(href string, cacheDir string) error {
