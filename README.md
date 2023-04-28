@@ -13,7 +13,7 @@ TBD
 Add a Flux GitRepository:
 
 ```yaml
-apiVersion: source.toolkit.fluxcd.io/v1beta1
+apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: GitRepository
 metadata:
   name: credentials

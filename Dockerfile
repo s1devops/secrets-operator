@@ -1,5 +1,5 @@
 # Build the binary
-FROM golang:1.16 as builder
+FROM golang:1.20 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -15,7 +15,7 @@ COPY secrets/ secrets/
 # Build
 RUN CGO_ENABLED=0 go build -a -o secrets-operator main.go
 
-FROM debian:buster
+FROM debian:bullseye
 
 RUN set -eux; \
     apt-get update \
