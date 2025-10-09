@@ -24,7 +24,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -40,9 +39,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	sourcev1 "github.com/fluxcd/source-controller/api/v1beta2"
+	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	secretsv1alpha1 "github.com/s1devops/secrets-operator/api/v1alpha1"
 	"github.com/s1devops/secrets-operator/secrets"
 	apiv1 "k8s.io/api/core/v1"
@@ -119,7 +117,7 @@ func (r *SecretMappingReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	privateKeyPath := filepath.Join(r.GitCacheDir, privateKeyHash) + ".asc"
 	if _, err := os.Stat(privateKeyPath); os.IsNotExist(err) {
 		// Never imported
-		if err = ioutil.WriteFile(privateKeyPath, privateKey, FILE_MODE); err != nil {
+		if err = os.WriteFile(privateKeyPath, privateKey, FILE_MODE); err != nil {
 			logger.Error(err, "Failed to find save private key", "SecretMapping.Namespace", secretMapping.Namespace, "SecretMapping.Name", secretMapping.Name)
 			return ctrl.Result{}, err
 		}
@@ -268,9 +266,9 @@ func downloadArtifact(href string, cacheDir string) error {
 			return err
 		}
 
-		if(header.Typeflag != tar.TypeReg) {
+		if header.Typeflag != tar.TypeReg {
 			// Ignore any non regular files
-			continue;
+			continue
 		}
 		destinationPath := filepath.Join(cacheDir, header.Name)
 
@@ -364,18 +362,22 @@ func (r *SecretMappingReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&secretsv1alpha1.SecretMapping{}).
 		Watches(
-			&source.Kind{Type: &secretsv1alpha1.SecretSource{}},
-			handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
-				secretSource := obj.(*secretsv1alpha1.SecretSource)
-				return secretSourceToSecretMappings(mgr, secretSource)
-			}),
+			&secretsv1alpha1.SecretSource{},
+			handler.EnqueueRequestsFromMapFunc(
+				func(ctx context.Context, obj client.Object) []reconcile.Request {
+					secretSource := obj.(*secretsv1alpha1.SecretSource)
+					return secretSourceToSecretMappings(mgr, secretSource)
+				},
+			),
 		).
 		Watches(
-			&source.Kind{Type: &sourcev1.GitRepository{}},
-			handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
-				gitRepo := obj.(*sourcev1.GitRepository)
-				return gitRepositoryToSecretMappings(mgr, gitRepo)
-			}),
+			&sourcev1.GitRepository{},
+			handler.EnqueueRequestsFromMapFunc(
+				func(ctx context.Context, obj client.Object) []reconcile.Request {
+					gitRepo := obj.(*sourcev1.GitRepository)
+					return gitRepositoryToSecretMappings(mgr, gitRepo)
+				},
+			),
 		).
 		Owns(&apiv1.Secret{}).
 		Complete(r)
